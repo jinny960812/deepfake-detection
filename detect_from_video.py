@@ -148,7 +148,7 @@ def test_full_image_network(video_path, model_path, output_path,
 
     # Frame numbers and length of output video
     frame_num = 0
-    assert start_frame < num_frames - 1
+    assert start_frame <= num_frames - 1
     end_frame = end_frame if end_frame else num_frames
     pbar = tqdm(total=end_frame-start_frame)
 
@@ -174,7 +174,6 @@ def test_full_image_network(video_path, model_path, output_path,
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = face_detector(gray, 1)
         if len(faces):
-            # For now only take biggest face
             face = faces[0]
 
             # --- Prediction ---------------------------------------------------
@@ -230,10 +229,12 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     video_path = args.video_path
+
+
     if video_path.endswith('.mp4') or video_path.endswith('.avi'):
         test_full_image_network(**vars(args))
     else:
         videos = os.listdir(video_path)
         for video in videos:
-            args.video_path = join(video_path, video)
+            args.video_path = os.path.join(video_path, video)
             test_full_image_network(**vars(args))

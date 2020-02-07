@@ -21,8 +21,10 @@ def main():
 	test_dataset_size = len(test_dataset)
 	corrects = 0
 	acc = 0
+	iteration = 0
 	#model = torchvision.models.densenet121(num_classes=2)
-	model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+	#model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+	model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
 	model.load_state_dict(torch.load(model_path))
 	if isinstance(model, torch.nn.DataParallel):
 		model = model.module
@@ -30,22 +32,31 @@ def main():
 	model.eval()
 	with torch.no_grad():
 		for (image, labels) in test_loader:
+			iter_corrects=0
 			image = image.cuda()
 			labels = labels.cuda()
 			outputs = model(image)
 			_, preds = torch.max(outputs.data, 1)
 			corrects += torch.sum(preds == labels.data).to(torch.float32)
-			print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
+			iter_corrects = torch.sum(preds == labels.data).to(torch.float32)
+			iteration+=1
+			if not (iteration % 100):
+				print('iteration {} Acc: {:.4f}'.format(iteration, iter_corrects / batch_size))
+				print(iter_corrects)
+				print(corrects)
+
+			#print('Iteration Acc {:.4f}'.format(torch.sum(preds == labels.data).to(torch.float32)/batch_size))
 		acc = corrects / test_dataset_size
 		print('Test Acc: {:.4f}'.format(acc))
+		print(test_dataset_size)
 
 
 
 if __name__ == '__main__':
 	parse = argparse.ArgumentParser(
 		formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parse.add_argument('--batch_size', '-bz', type=int, default=32)
-	parse.add_argument('--test_list', '-tl', type=str, default='./data_list/Deepfakes_c0_test.txt')
+	parse.add_argument('--batch_size', '-bz', type=int, default=16)
+	parse.add_argument('--test_list', '-tl', type=str, default='./List_testing_1.txt')
 	parse.add_argument('--model_path', '-mp', type=str, default='./pretrained_model/df_c0_best.pkl')
 	main()
 	print('Hello world!!!')

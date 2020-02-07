@@ -13,6 +13,7 @@ class MyDataset(Dataset):
     def __init__(self, txt_path, transform=None, target_transform=None):
         fh = open(txt_path, 'r')
         imgs = []
+
         for line in fh:
             line = line.rstrip()
             words = line.split()

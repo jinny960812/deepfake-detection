@@ -10,6 +10,7 @@ import torch
 #import pretrainedmodels
 import torch.nn as nn
 import torch.nn.functional as F
+#from network.xception import xception, xception_concat
 from network.xception import xception, xception_concat
 import math
 import torchvision
@@ -19,11 +20,12 @@ def return_pytorch04_xception(pretrained=False):
     # Raises warning "src not broadcastable to dst" but thats fine
     model = xception(pretrained=False)
     if pretrained:
+        print('pretrained selected, uploading')
         # Load model in torch 0.4+
         model.fc = model.last_linear
         del model.last_linear
         state_dict = torch.load(
-            '/public/liuhonggu/.torch/models/xception-b5690688.pth')
+            '/Users/leslie/Deepfake-Detection/xception-b5690688.pth')
         for name, weights in state_dict.items():
             if 'pointwise' in name:
                 state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
@@ -148,7 +150,14 @@ def model_selection(modelname, num_out_classes,
 
 
 if __name__ == '__main__':
-    model, image_size, *_ = model_selection('xception', num_out_classes=2)
+    #model, image_size, *_ = model_selection('xception', num_out_classes=2)
+    #print(model)
+    #model = model.cuda()
+    #from torchsummary import summary
+    #input_s = (3, image_size, image_size)
+    #print(summary(model, input_s))
+
+    model, image_size, *_ = model_selection('resnet18', num_out_classes=2)
     print(model)
     model = model.cuda()
     from torchsummary import summary
