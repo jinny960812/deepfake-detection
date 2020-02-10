@@ -12,6 +12,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 #from network.xception import xception, xception_concat
 from network.xception import xception, xception_concat
+from network.ResNetCRNN import ResCNNEncoder, DecoderRNN
 import math
 import torchvision
 
@@ -43,7 +44,9 @@ class TransferModel(nn.Module):
     def __init__(self, modelchoice, num_out_classes=2, dropout=0.5):
         super(TransferModel, self).__init__()
         self.modelchoice = modelchoice
-        if modelchoice == 'xception':
+        if modelchoice == "ResNetCRNN" :
+            self.model = Res
+        elif modelchoice == 'xception':
             self.model = return_pytorch04_xception(pretrained=False)
             # Replace fc
             num_ftrs = self.model.last_linear.in_features
