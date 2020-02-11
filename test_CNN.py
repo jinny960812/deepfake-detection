@@ -6,37 +6,45 @@ import torch.optim as optim
 from torch.optim import lr_scheduler
 import argparse
 import os
-import cv2
 from network.models import model_selection
 from dataset.transform import xception_default_data_transforms
 from dataset.mydataset import MyDataset
 def main():
+	#initialize arguments
 	args = parse.parse_args()
 	test_list = args.test_list
 	batch_size = args.batch_size
 	model_path = args.model_path
 	torch.backends.cudnn.benchmark=True
+
+	#set data loader
 	test_dataset = MyDataset(txt_path=test_list, transform=xception_default_data_transforms['test'])
 	test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=8)
-	test_dataset_size = len(test_dataset)
-	corrects = 0
-	acc = 0
-	iteration = 0
+
 	#model = torchvision.models.densenet121(num_classes=2)
 	#model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+
+	#load model and state dictionary
 	model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
 	model.load_state_dict(torch.load(model_path))
 	if isinstance(model, torch.nn.DataParallel):
 		model = model.module
 	model = model.cuda()
 	model.eval()
+
+	test_dataset_size = len(test_dataset)
+	corrects = 0
+	acc = 0
+	iteration = 0
 	with torch.no_grad():
 		for (image, labels) in test_loader:
 			iter_corrects=0
 			image = image.cuda()
 			labels = labels.cuda()
+
 			outputs = model(image)
 			_, preds = torch.max(outputs.data, 1)
+
 			corrects += torch.sum(preds == labels.data).to(torch.float32)
 			iter_corrects = torch.sum(preds == labels.data).to(torch.float32)
 			iteration+=1

@@ -45,7 +45,7 @@ class TransferModel(nn.Module):
         super(TransferModel, self).__init__()
         self.modelchoice = modelchoice
         if modelchoice == "ResNetCRNN" :
-            self.model = Res
+            self.model = nn.Sequential(ResCNNEncoder, DecoderRNN)
         elif modelchoice == 'xception':
             self.model = return_pytorch04_xception(pretrained=False)
             # Replace fc

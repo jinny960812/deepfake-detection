@@ -54,7 +54,7 @@ class ResCNNEncoder(nn.Module):
 
 
 class DecoderRNN(nn.Module):
-    def __init__(self, CNN_embed_dim=300, h_RNN_layers=3, h_RNN=256, h_FC_dim=128, drop_p=0.3, num_classes=50):
+    def __init__(self, CNN_embed_dim=300, h_RNN_layers=3, h_RNN=256, h_FC_dim=128, drop_p=0.3, num_classes=2):
         super(DecoderRNN, self).__init__()
 
         self.RNN_input_size = CNN_embed_dim

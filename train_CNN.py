@@ -27,6 +27,8 @@ def main():
 	if not os.path.exists(output_path):
 		os.mkdir(output_path)
 	torch.backends.cudnn.benchmark=True
+
+	#set data loader
 	train_dataset = MyDataset(txt_path=train_list, transform=xception_default_data_transforms['train'])
 	#val_dataset = MyDataset(txt_path=val_list, transform=xception_default_data_transforms['val'])
 	train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, drop_last=False, num_workers=8)
@@ -34,14 +36,18 @@ def main():
 	train_dataset_size = len(train_dataset)
 	#val_dataset_size = len(val_dataset)
 	#model = model_selection(modelname='xception', num_out_classes=2, dropout=0.5)
+
+	#load model
 	model = model_selection(modelname='resnet18', num_out_classes=2, dropout=0.5)
 	if continue_train:
 		model.load_state_dict(torch.load(model_path))
 	model = model.cuda()
+	model = nn.DataParallel(model)
+
 	optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08)
 	scheduler = lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 	criterion = nn.CrossEntropyLoss()
-	model = nn.DataParallel(model)
+
 	best_model_wts = model.state_dict()
 	best_acc = 0.0
 	iteration = 0
@@ -59,11 +65,15 @@ def main():
 			image = image.cuda()
 			labels = labels.cuda()
 			optimizer.zero_grad()
+
 			outputs = model(image)
 			_, preds = torch.max(outputs.data, 1)
+
 			loss = criterion(outputs, labels)
 			loss.backward()
+
 			optimizer.step()
+
 			iter_loss = loss.data.item()
 			train_loss += iter_loss
 			iter_corrects = torch.sum(preds == labels.data).to(torch.float32)
